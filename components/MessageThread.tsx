@@ -45,7 +45,7 @@ export default function MessageThread({ history }: { history: Message[] }) {
               {!isHim && (
                 <button
                   onClick={() => handleCopy(msg.display?.text ?? "", i)}
-                  className="absolute -top-2 -right-2 bg-white border border-gray-200 text-[10px] text-gray-500 hover:text-gray-700 px-2 py-0.5 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition"
+                  className="absolute -top-2 -right-2 bg-white border border-gray-200 text-[10px] text-gray-500 hover:text-gray-700 px-2 py-0.5 rounded-full shadow-sm transition"
                 >
                   {copied === i ? "copied!" : "copy"}
                 </button>
