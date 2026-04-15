@@ -183,7 +183,25 @@ export default function Home() {
           </div>
 
           {suggestions.length > 0 && (
-            <ReplySuggestions suggestions={suggestions} onPick={handlePickReply} />
+            <div>
+              <ReplySuggestions suggestions={suggestions} onPick={handlePickReply} />
+              <button
+                onClick={() => {
+                  setSuggestions([]);
+                  // Remove the last "him" message from history
+                  setConvos((prev) =>
+                    prev.map((c) =>
+                      c.id === activeId
+                        ? { ...c, history: c.history.slice(0, -1) }
+                        : c
+                    )
+                  );
+                }}
+                className="w-full text-sm text-gray-300 hover:text-gray-500 py-2 transition"
+              >
+                ← edit his message
+              </button>
+            </div>
           )}
 
           {suggestions.length === 0 && (
