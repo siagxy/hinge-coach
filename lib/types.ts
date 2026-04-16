@@ -17,3 +17,14 @@ export type Conversation = {
   name: string;
   history: Message[];
 };
+
+export type UserProfile = {
+  name: string;
+  age: string;
+  vibe: string;        // e.g. "flirty", "chill", "witty", "warm"
+  length: string;      // e.g. "short", "medium", "long"
+  emoji: boolean;
+  haha: boolean;
+  examples: string[];  // user-provided example texts
+  bio: string;         // short free-text about themselves
+};

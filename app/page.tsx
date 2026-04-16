@@ -6,9 +6,12 @@ import ReplySuggestions from "@/components/ReplySuggestions";
 import ChatList from "@/components/ChatList";
 import StoryBar from "@/components/StoryBar";
 import BottomNav from "@/components/BottomNav";
-import { Message, Reply, Conversation } from "@/lib/types";
+import ToneSetup from "@/components/ToneSetup";
+import { Message, Reply, Conversation, UserProfile } from "@/lib/types";
 
 export default function Home() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [convos, setConvos] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Reply[]>([]);
@@ -18,24 +21,44 @@ export default function Home() {
   const [view, setView] = useState<"list" | "chat">("list");
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Load saved data on mount
   useEffect(() => {
-    const saved = localStorage.getItem("hinge-convos");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setConvos(parsed);
+    const savedProfile = localStorage.getItem("user-profile");
+    if (savedProfile) {
+      setProfile(JSON.parse(savedProfile));
+    }
+    setProfileLoaded(true);
+
+    const savedConvos = localStorage.getItem("hinge-convos");
+    if (savedConvos) {
+      setConvos(JSON.parse(savedConvos));
     }
   }, []);
 
+  // Persist conversations
   useEffect(() => {
-    localStorage.setItem("hinge-convos", JSON.stringify(convos));
+    if (profileLoaded) {
+      localStorage.setItem("hinge-convos", JSON.stringify(convos));
+    }
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [convos]);
+  }, [convos, profileLoaded]);
 
+  // Clear suggestions on convo switch
   useEffect(() => {
     setSuggestions([]);
   }, [activeId]);
 
   const activeConvo = convos.find((c) => c.id === activeId) ?? null;
+
+  const handleProfileComplete = (p: UserProfile) => {
+    setProfile(p);
+    localStorage.setItem("user-profile", JSON.stringify(p));
+  };
+
+  const resetProfile = () => {
+    setProfile(null);
+    localStorage.removeItem("user-profile");
+  };
 
   const createConvo = () => {
     if (!newName.trim()) return;
@@ -93,7 +116,7 @@ export default function Home() {
       const res = await fetch("/api/reply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ history: apiHistory }),
+        body: JSON.stringify({ history: apiHistory, profile }),
       });
       const data = await res.json();
       setSuggestions(data.replies ?? []);
@@ -118,18 +141,42 @@ export default function Home() {
     setSuggestions([]);
   };
 
+  // Don't render until localStorage is loaded
+  if (!profileLoaded) return null;
+
+  // ─── Onboarding ───
+  if (!profile) {
+    return <ToneSetup onComplete={handleProfileComplete} />;
+  }
+
   // ─── Chat List View ───
   if (view === "list") {
     return (
       <main className="max-w-md mx-auto w-full min-h-screen flex flex-col bg-white">
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-5 pb-3">
-          <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Chatting</h1>
-          <button className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#666" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <div>
+            <p className="text-xs text-gray-400 font-medium">Welcome back,</p>
+            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">{profile.name}</h1>
+          </div>
+          <button
+            onClick={resetProfile}
+            className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition"
+            title="Reset profile"
+          >
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#666" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </button>
+        </div>
+
+        {/* Vibe badge */}
+        <div className="px-4 pb-3">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#e84672] bg-pink-50 px-3 py-1 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#e84672]" />
+            {profile.vibe} vibe &middot; {profile.length} messages
+          </span>
         </div>
 
         {/* Story Bar */}

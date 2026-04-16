@@ -1,16 +1,21 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { SYSTEM_PROMPT } from "@/lib/prompts";
+import { buildSystemPrompt, SYSTEM_PROMPT } from "@/lib/prompts";
+import { UserProfile } from "@/lib/types";
 
 const client = new Anthropic();
 
 export async function POST(req: Request) {
   try {
-    const { history } = await req.json();
+    const { history, profile } = await req.json();
+
+    const systemPrompt = profile
+      ? buildSystemPrompt(profile as UserProfile)
+      : SYSTEM_PROMPT;
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: history,
     });
 
