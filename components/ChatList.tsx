@@ -72,8 +72,15 @@ export default function ChatList({
             }`}
           >
             {/* Avatar */}
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${PLACEHOLDER_COLORS[i % PLACEHOLDER_COLORS.length]}`}>
-              <span className="text-sm font-bold text-gray-700">{getInitials(c.name)}</span>
+            <div className="relative flex-shrink-0">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${PLACEHOLDER_COLORS[i % PLACEHOLDER_COLORS.length]}`}>
+                <span className="text-sm font-bold text-gray-700">{getInitials(c.name)}</span>
+              </div>
+              {(c.flags?.length ?? 0) > 0 && (
+                <span className="absolute -bottom-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
+                  {c.flags?.length}
+                </span>
+              )}
             </div>
 
             {/* Name + last message */}

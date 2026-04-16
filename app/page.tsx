@@ -7,7 +7,8 @@ import ChatList from "@/components/ChatList";
 import StoryBar from "@/components/StoryBar";
 import BottomNav from "@/components/BottomNav";
 import ToneSetup from "@/components/ToneSetup";
-import { Message, Reply, Conversation, UserProfile } from "@/lib/types";
+import PersonProfile from "@/components/PersonProfile";
+import { Message, Reply, Conversation, UserProfile, Flag } from "@/lib/types";
 
 export default function Home() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -18,7 +19,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [newName, setNewName] = useState("");
-  const [view, setView] = useState<"list" | "chat">("list");
+  const [view, setView] = useState<"list" | "chat" | "profile">("list");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Load saved data on mount
@@ -141,6 +142,16 @@ export default function Home() {
     setSuggestions([]);
   };
 
+  const updateFlags = (id: string, flags: Flag[]) => {
+    setConvos((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, flags } : c))
+    );
+  };
+
+  const openProfile = () => {
+    if (activeConvo) setView("profile");
+  };
+
   // Don't render until localStorage is loaded
   if (!profileLoaded) return null;
 
@@ -231,6 +242,19 @@ export default function Home() {
     );
   }
 
+  // ─── Profile View ───
+  if (view === "profile" && activeConvo) {
+    const colorIndex = convos.findIndex((c) => c.id === activeId);
+    return (
+      <PersonProfile
+        conversation={activeConvo}
+        colorIndex={colorIndex}
+        onBack={() => setView("chat")}
+        onUpdateFlags={(flags) => updateFlags(activeConvo.id, flags)}
+      />
+    );
+  }
+
   // ─── Conversation View ───
   return (
     <main className="max-w-md mx-auto w-full min-h-screen flex flex-col bg-white">
@@ -245,17 +269,24 @@ export default function Home() {
           </svg>
         </button>
 
-        {/* Avatar */}
-        <div className="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center">
-          <span className="text-xs font-bold text-gray-700">
-            {activeConvo?.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-          </span>
-        </div>
+        {/* Avatar — tap to open profile */}
+        <button onClick={openProfile} className="relative">
+          <div className="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center">
+            <span className="text-xs font-bold text-gray-700">
+              {activeConvo?.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+            </span>
+          </div>
+          {(activeConvo?.flags?.length ?? 0) > 0 && (
+            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
+              {activeConvo?.flags?.length}
+            </span>
+          )}
+        </button>
 
-        <div className="flex-1 min-w-0">
+        <button onClick={openProfile} className="flex-1 min-w-0 text-left">
           <p className="text-base font-bold text-gray-900 truncate">{activeConvo?.name}</p>
           <p className="text-[11px] text-green-500 font-medium">Online</p>
-        </div>
+        </button>
 
         <button
           onClick={() => activeConvo && deleteConvo(activeConvo.id)}

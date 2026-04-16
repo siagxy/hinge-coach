@@ -12,10 +12,17 @@ export type Reply = {
   message: string;
 };
 
+export type Flag = {
+  id: string;
+  label: string;
+  type: "green" | "red";
+};
+
 export type Conversation = {
   id: string;
   name: string;
   history: Message[];
+  flags?: Flag[];
 };
 
 export type UserProfile = {
