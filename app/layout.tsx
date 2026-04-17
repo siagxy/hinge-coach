@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chat - Dating App",
-  description: "AI-powered dating chat assistant",
+  title: "Talk Sweet",
+  description: "AI-powered dating reply coach",
 };
 
 export default function RootLayout({
