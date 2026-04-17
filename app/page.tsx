@@ -20,6 +20,8 @@ export default function Home() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [view, setView] = useState<"list" | "chat" | "profile">("list");
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetNotice, setResetNotice] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Load saved data on mount
@@ -49,6 +51,14 @@ export default function Home() {
     setSuggestions([]);
   }, [activeId]);
 
+  useEffect(() => {
+    if (!resetNotice) return;
+    const timer = window.setTimeout(() => {
+      setResetNotice(null);
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [resetNotice]);
+
   const activeConvo = convos.find((c) => c.id === activeId) ?? null;
 
   const handleProfileComplete = (p: UserProfile) => {
@@ -56,9 +66,15 @@ export default function Home() {
     localStorage.setItem("user-profile", JSON.stringify(p));
   };
 
+  const requestResetProfile = () => {
+    setShowResetConfirm(true);
+  };
+
   const resetProfile = () => {
     setProfile(null);
     localStorage.removeItem("user-profile");
+    setShowResetConfirm(false);
+    setResetNotice("Profile reset. You can set up your style again.");
   };
 
   const createConvo = () => {
@@ -171,7 +187,7 @@ export default function Home() {
             <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">{profile.name}</h1>
           </div>
           <button
-            onClick={resetProfile}
+            onClick={requestResetProfile}
             className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition"
             title="Reset profile"
           >
@@ -238,6 +254,39 @@ export default function Home() {
 
         {/* Bottom Nav */}
         <BottomNav active="chat" />
+
+        {showResetConfirm && (
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center">
+            <div className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-2xl px-5 pt-5 pb-4 shadow-xl">
+              <p className="text-base font-bold text-gray-900">Reset your profile?</p>
+              <p className="text-sm text-gray-500 mt-2">
+                This will remove your current style profile and send you back to onboarding.
+              </p>
+              <div className="flex gap-2 mt-5">
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={resetProfile}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition"
+                >
+                  Yes, reset
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {resetNotice && (
+          <div className="fixed left-1/2 -translate-x-1/2 bottom-20 z-50 px-4">
+            <div className="bg-gray-900 text-white text-xs font-medium px-3 py-2 rounded-full shadow-lg">
+              {resetNotice}
+            </div>
+          </div>
+        )}
       </main>
     );
   }
