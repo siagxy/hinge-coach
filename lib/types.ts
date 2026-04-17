@@ -28,6 +28,30 @@ export type Conversation = {
 export type UserProfile = {
   name: string;
   age: string;
+  location?: string;
+  interests?: string;
+  currentCity?: string;
+  currentCountry?: string;
+  homeCountry?: string;
+  workMode?: string;
+  socialEnergy?: string;
+  relationshipGoal?: string;
+  datingPace?: string;
+  moveToDateTiming?: string;
+  firstDateTypes?: string[];
+  emojiUsage?: string;
+  emojiStyle?: string[];
+  fillerWords?: string[];
+  capitalizationStyle?: string;
+  punctuationStyle?: string;
+  directnessLevel?: string;
+  playfulnessLevel?: string;
+  flirtingStyles?: string[];
+  humorStyles?: string[];
+  dryTexterStrategy?: string;
+  avoidTopics?: string[];
+  hardBoundaries?: string[];
+  turnOffs?: string[];
   vibe: string;        // e.g. "flirty", "chill", "witty", "warm"
   length: string;      // e.g. "short", "medium", "long"
   emoji: boolean;

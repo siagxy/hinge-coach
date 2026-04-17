@@ -32,7 +32,21 @@ You are helping ${profile.name} reply to messages on a dating app. Write exactly
 
 About ${profile.name}:
 - ${profile.age} years old
+${profile.location ? `- Based in: ${profile.location}` : ""}
+${profile.interests ? `- Interests: ${profile.interests}` : ""}
 ${profile.bio ? `- ${profile.bio}` : ""}
+${profile.relationshipGoal ? `- Dating intent: ${profile.relationshipGoal}` : ""}
+${profile.datingPace ? `- Dating pace: ${profile.datingPace}` : ""}
+${profile.moveToDateTiming ? `- Moves to date: ${profile.moveToDateTiming}` : ""}
+${profile.firstDateTypes?.length ? `- Preferred first dates: ${profile.firstDateTypes.join(", ")}` : ""}
+${profile.directnessLevel ? `- Directness: ${profile.directnessLevel}` : ""}
+${profile.playfulnessLevel ? `- Playfulness: ${profile.playfulnessLevel}` : ""}
+${profile.flirtingStyles?.length ? `- Flirting style: ${profile.flirtingStyles.join(", ")}` : ""}
+${profile.humorStyles?.length ? `- Humor style: ${profile.humorStyles.join(", ")}` : ""}
+${profile.dryTexterStrategy ? `- Dry texter strategy: ${profile.dryTexterStrategy}` : ""}
+${profile.avoidTopics?.length ? `- Avoid topics: ${profile.avoidTopics.join(", ")}` : ""}
+${profile.hardBoundaries?.length ? `- Boundaries: ${profile.hardBoundaries.join(", ")}` : ""}
+${profile.turnOffs?.length ? `- Turn-offs: ${profile.turnOffs.join(", ")}` : ""}
 
 Tone & vibe: ${vibeDesc}
 Message length preference: ${lengthDesc}

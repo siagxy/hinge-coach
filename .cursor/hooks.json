@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": ".cursor/hooks/ship-it.py",
+        "matcher": "UserPromptSubmit",
+        "timeout": 120
+      }
+    ]
+  }
+}
