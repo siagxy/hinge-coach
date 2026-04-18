@@ -7,7 +7,8 @@ import ChatList from "@/components/ChatList";
 import StoryBar from "@/components/StoryBar";
 import BottomNav from "@/components/BottomNav";
 import ToneSetup from "@/components/ToneSetup";
-import PersonProfile from "@/components/PersonProfile";
+import DateFlagsScreen from "@/components/DateFlagsScreen";
+import MatchContextScreen from "@/components/MatchContextScreen";
 import { hasSavedMatchContext } from "@/lib/conversationUtils";
 import { Message, Reply, Conversation, UserProfile, Flag, MatchContextImage } from "@/lib/types";
 
@@ -20,7 +21,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [newName, setNewName] = useState("");
-  const [view, setView] = useState<"list" | "chat" | "profile">("list");
+  const [view, setView] = useState<"list" | "chat" | "matchContext" | "dateFlags">("list");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -227,8 +228,12 @@ export default function Home() {
     );
   };
 
-  const openProfile = () => {
-    if (activeConvo) setView("profile");
+  const openMatchContext = () => {
+    if (activeConvo) setView("matchContext");
+  };
+
+  const openDateFlags = () => {
+    if (activeConvo) setView("dateFlags");
   };
 
   // Don't render until localStorage is loaded
@@ -398,27 +403,38 @@ export default function Home() {
   }
 
   // ─── Profile View ───
-  if (view === "profile" && activeConvo) {
+  if (view === "matchContext" && activeConvo) {
     const colorIndex = convos.findIndex((c) => c.id === activeId);
     return (
-      <PersonProfile
-        key={activeConvo.id}
+      <MatchContextScreen
+        key={`ctx-${activeConvo.id}`}
         conversation={activeConvo}
         colorIndex={colorIndex}
         onBack={() => setView("chat")}
-        onUpdateFlags={(flags) => updateFlags(activeConvo.id, flags)}
         onUpdateMatchContext={(payload) => {
           updateMatchContext(activeConvo.id, payload);
-          setContextSaveNotice("Context saved for this chat.");
+          setContextSaveNotice("About him saved for this chat.");
         }}
       />
     );
   }
 
+  if (view === "dateFlags" && activeConvo) {
+    const colorIndex = convos.findIndex((c) => c.id === activeId);
+    return (
+      <DateFlagsScreen
+        key={`flags-${activeConvo.id}`}
+        conversation={activeConvo}
+        colorIndex={colorIndex}
+        onBack={() => setView("chat")}
+        onUpdateFlags={(flags) => updateFlags(activeConvo.id, flags)}
+      />
+    );
+  }
+
   // ─── Conversation View ───
-  const profileNotesCount = activeConvo
-    ? (activeConvo.flags?.length ?? 0) + (hasSavedMatchContext(activeConvo) ? 1 : 0)
-    : 0;
+  const flagCount = activeConvo ? (activeConvo.flags?.length ?? 0) : 0;
+  const hasContextSaved = activeConvo ? hasSavedMatchContext(activeConvo) : false;
 
   return (
     <main className="max-w-md mx-auto w-full min-h-screen flex flex-col bg-white">
@@ -433,32 +449,49 @@ export default function Home() {
           </svg>
         </button>
 
-        {/* Avatar — tap to open profile */}
-        <button onClick={openProfile} className="relative">
+        {/* Avatar — tap for pros & cons */}
+        <button type="button" onClick={openDateFlags} className="relative shrink-0">
           <div className="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center">
             <span className="text-xs font-bold text-gray-700">
               {activeConvo?.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
             </span>
           </div>
-          {profileNotesCount > 0 && (
+          {flagCount > 0 && (
             <span className="absolute -bottom-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
-              {profileNotesCount}
+              {flagCount}
             </span>
           )}
         </button>
 
-        <button onClick={openProfile} className="flex-1 min-w-0 text-left min-w-0">
+        <button type="button" onClick={openDateFlags} className="flex-1 min-w-0 text-left min-w-0">
           <p className="text-base font-bold text-gray-900 truncate">{activeConvo?.name}</p>
           <p className="text-[11px] text-green-500 font-medium">Online</p>
         </button>
 
         <button
           type="button"
-          onClick={openProfile}
-          className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold text-[#e84672] bg-pink-50 hover:bg-pink-100 border border-pink-100 transition"
-          title="His profile, screenshots, or past chats"
+          onClick={openMatchContext}
+          className="relative shrink-0 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-[#e84672] bg-pink-50 hover:bg-pink-100 border border-pink-100 transition"
+          title="His profile, screenshots, and prior chats — used to personalize replies"
         >
-          Context
+          About him
+          {hasContextSaved && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={openDateFlags}
+          className="relative shrink-0 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 transition"
+          title="What stands out — good signs and things to watch"
+        >
+          Pros & cons
+          {flagCount > 0 && (
+            <span className="absolute -bottom-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
+              {flagCount}
+            </span>
+          )}
         </button>
 
         <button

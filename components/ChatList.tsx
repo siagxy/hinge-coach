@@ -1,5 +1,5 @@
 "use client";
-import { profileNotesBadgeCount } from "@/lib/conversationUtils";
+import { flagsBadgeCount, hasSavedMatchContext } from "@/lib/conversationUtils";
 import { Conversation } from "@/lib/types";
 
 const PLACEHOLDER_COLORS = [
@@ -64,7 +64,8 @@ export default function ChatList({
         const lastMsg = getLastMessage(c);
         const timeLabel = getTimeLabel(c);
         const hasMessages = c.history.length > 0;
-        const badgeCount = profileNotesBadgeCount(c);
+        const flagCount = flagsBadgeCount(c);
+        const hasContext = hasSavedMatchContext(c);
         return (
           <button
             key={c.id}
@@ -78,9 +79,15 @@ export default function ChatList({
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${PLACEHOLDER_COLORS[i % PLACEHOLDER_COLORS.length]}`}>
                 <span className="text-sm font-bold text-gray-700">{getInitials(c.name)}</span>
               </div>
-              {badgeCount > 0 && (
+              {hasContext && (
+                <span
+                  className="absolute -top-0.5 -left-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"
+                  title="About him — profile & history saved"
+                />
+              )}
+              {flagCount > 0 && (
                 <span className="absolute -bottom-0.5 -right-0.5 min-w-[18px] h-[18px] px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
-                  {badgeCount}
+                  {flagCount}
                 </span>
               )}
             </div>

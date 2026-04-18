@@ -9,6 +9,6 @@ export function hasSavedMatchContext(c: Conversation): boolean {
   );
 }
 
-export function profileNotesBadgeCount(c: Conversation): number {
-  return (c.flags?.length ?? 0) + (hasSavedMatchContext(c) ? 1 : 0);
+export function flagsBadgeCount(c: Conversation): number {
+  return c.flags?.length ?? 0;
 }
