@@ -11,7 +11,6 @@ const CATEGORY_TITLES = [
   "Optional Personalization",
 ];
 
-const AGE_OPTIONS = ["18-24", "25-29", "30-34", "35-39", "40+"];
 const WORK_MODE_OPTIONS = ["9-5", "Flexible", "Student", "Shift work", "Founder/Freelance"];
 const SOCIAL_ENERGY_OPTIONS = ["Introvert", "Ambivert", "Extrovert"];
 const INTEREST_OPTIONS = [
@@ -64,46 +63,110 @@ const TURN_OFF_OPTIONS = [
   "Love bombing",
 ];
 
+const COUNTRY_SUGGESTIONS = [
+  "United States",
+  "Canada",
+  "United Kingdom",
+  "Australia",
+  "New Zealand",
+  "China",
+  "Japan",
+  "South Korea",
+  "Singapore",
+  "India",
+  "Germany",
+  "France",
+  "Italy",
+  "Spain",
+  "Netherlands",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Switzerland",
+  "Brazil",
+  "Mexico",
+];
+
 export default function ToneSetup({
   onComplete,
+  initialProfile,
+  onCancel,
 }: {
   onComplete: (profile: UserProfile) => void;
+  initialProfile?: UserProfile | null;
+  onCancel?: () => void;
 }) {
+  const parseList = (value?: string) =>
+    value
+      ? value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : [];
+
+  const toExamples = (list?: string[]) => {
+    const seed = [...(list ?? []).slice(0, 3)];
+    while (seed.length < 3) seed.push("");
+    return seed;
+  };
+
   const [step, setStep] = useState(0);
-  const [ageRange, setAgeRange] = useState("");
-  const [currentCity, setCurrentCity] = useState("");
-  const [currentCountry, setCurrentCountry] = useState("");
-  const [homeCountry, setHomeCountry] = useState("");
-  const [workMode, setWorkMode] = useState("");
-  const [socialEnergy, setSocialEnergy] = useState("");
-  const [interests, setInterests] = useState<string[]>([]);
+  const [age, setAge] = useState(initialProfile?.age ?? "");
+  const [currentCity, setCurrentCity] = useState(initialProfile?.currentCity ?? "");
+  const [currentCountry, setCurrentCountry] = useState(initialProfile?.currentCountry ?? "");
+  const [homeCountry, setHomeCountry] = useState(initialProfile?.homeCountry ?? "");
+  const [workMode, setWorkMode] = useState(initialProfile?.workMode ?? "");
+  const [socialEnergy, setSocialEnergy] = useState(initialProfile?.socialEnergy ?? "");
+  const [interests, setInterests] = useState<string[]>(
+    parseList(initialProfile?.interests)
+  );
 
-  const [relationshipGoal, setRelationshipGoal] = useState("");
-  const [datingPace, setDatingPace] = useState("");
-  const [moveToDateTiming, setMoveToDateTiming] = useState("");
-  const [firstDateTypes, setFirstDateTypes] = useState<string[]>([]);
+  const [relationshipGoal, setRelationshipGoal] = useState(initialProfile?.relationshipGoal ?? "");
+  const [datingPace, setDatingPace] = useState(initialProfile?.datingPace ?? "");
+  const [moveToDateTiming, setMoveToDateTiming] = useState(initialProfile?.moveToDateTiming ?? "");
+  const [firstDateTypes, setFirstDateTypes] = useState<string[]>(
+    initialProfile?.firstDateTypes ?? []
+  );
 
-  const [vibe, setVibe] = useState("");
-  const [length, setLength] = useState("");
-  const [emojiUsage, setEmojiUsage] = useState("");
-  const [emojiStyle, setEmojiStyle] = useState<string[]>([]);
-  const [fillerWords, setFillerWords] = useState<string[]>([]);
-  const [capitalizationStyle, setCapitalizationStyle] = useState("");
-  const [punctuationStyle, setPunctuationStyle] = useState("");
+  const [vibe, setVibe] = useState(initialProfile?.vibe ?? "");
+  const [length, setLength] = useState(initialProfile?.length ?? "");
+  const [emojiUsage, setEmojiUsage] = useState(
+    initialProfile?.emojiUsage ?? (initialProfile?.emoji ? "Often" : "")
+  );
+  const [emojiStyle, setEmojiStyle] = useState<string[]>(initialProfile?.emojiStyle ?? []);
+  const [fillerWords, setFillerWords] = useState<string[]>(
+    initialProfile?.fillerWords ?? (initialProfile?.haha ? ["haha", "lol"] : [])
+  );
+  const [capitalizationStyle, setCapitalizationStyle] = useState(
+    initialProfile?.capitalizationStyle ?? ""
+  );
+  const [punctuationStyle, setPunctuationStyle] = useState(
+    initialProfile?.punctuationStyle ?? ""
+  );
 
-  const [directnessLevel, setDirectnessLevel] = useState("");
-  const [playfulnessLevel, setPlayfulnessLevel] = useState("");
-  const [flirtingStyles, setFlirtingStyles] = useState<string[]>([]);
-  const [humorStyles, setHumorStyles] = useState<string[]>([]);
-  const [dryTexterStrategy, setDryTexterStrategy] = useState("");
+  const [directnessLevel, setDirectnessLevel] = useState(initialProfile?.directnessLevel ?? "");
+  const [playfulnessLevel, setPlayfulnessLevel] = useState(initialProfile?.playfulnessLevel ?? "");
+  const [flirtingStyles, setFlirtingStyles] = useState<string[]>(
+    initialProfile?.flirtingStyles ?? []
+  );
+  const [humorStyles, setHumorStyles] = useState<string[]>(initialProfile?.humorStyles ?? []);
+  const [dryTexterStrategy, setDryTexterStrategy] = useState(initialProfile?.dryTexterStrategy ?? "");
 
-  const [avoidTopics, setAvoidTopics] = useState<string[]>([]);
-  const [hardBoundaries, setHardBoundaries] = useState<string[]>([]);
-  const [turnOffs, setTurnOffs] = useState<string[]>([]);
+  const [avoidTopics, setAvoidTopics] = useState<string[]>(initialProfile?.avoidTopics ?? []);
+  const [hardBoundaries, setHardBoundaries] = useState<string[]>(
+    initialProfile?.hardBoundaries ?? []
+  );
+  const [turnOffs, setTurnOffs] = useState<string[]>(initialProfile?.turnOffs ?? []);
 
-  const [examples, setExamples] = useState(["", "", ""]);
+  const [examples, setExamples] = useState<string[]>(toExamples(initialProfile?.examples));
 
   const totalSteps = CATEGORY_TITLES.length;
+  const standardInputClass =
+    "w-full bg-gray-50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#e84672]/20 placeholder-gray-300";
+
+  const normalizeText = (value: string) => value.trim().replace(/\s+/g, " ");
+  const normalizePlace = (value: string) =>
+    normalizeText(value).replace(/\b[a-z]/g, (char) => char.toUpperCase());
 
   const toggleMulti = (
     selected: string[],
@@ -141,8 +204,12 @@ export default function ToneSetup({
 
   const canNext = () => {
     if (step === 0) {
+      const parsedAge = Number(age);
       return Boolean(
-        ageRange &&
+        age.trim() &&
+          Number.isInteger(parsedAge) &&
+          parsedAge >= 18 &&
+          parsedAge <= 100 &&
           currentCity.trim() &&
           currentCountry.trim() &&
           homeCountry.trim() &&
@@ -161,7 +228,11 @@ export default function ToneSetup({
 
   const handleFinish = () => {
     const cleanExamples = examples.map((item) => item.trim()).filter(Boolean);
-    const location = `${currentCity.trim()}, ${currentCountry.trim()} (home: ${homeCountry.trim()})`;
+    const normalizedAge = normalizeText(age);
+    const normalizedCurrentCity = normalizePlace(currentCity);
+    const normalizedCurrentCountry = normalizePlace(currentCountry);
+    const normalizedHomeCountry = normalizePlace(homeCountry);
+    const location = `${normalizedCurrentCity}, ${normalizedCurrentCountry} (home: ${normalizedHomeCountry})`;
     const bio = [
       `Work mode: ${workMode}`,
       `Social energy: ${socialEnergy}`,
@@ -169,13 +240,13 @@ export default function ToneSetup({
     ].join(". ");
 
     onComplete({
-      name: "You",
-      age: ageRange,
+      name: initialProfile?.name || "You",
+      age: normalizedAge,
       location,
       interests: interests.join(", "),
-      currentCity: currentCity.trim(),
-      currentCountry: currentCountry.trim(),
-      homeCountry: homeCountry.trim(),
+      currentCity: normalizedCurrentCity,
+      currentCountry: normalizedCurrentCountry,
+      homeCountry: normalizedHomeCountry,
       workMode,
       socialEnergy,
       relationshipGoal,
@@ -208,15 +279,27 @@ export default function ToneSetup({
     <main className="max-w-md mx-auto w-full min-h-screen flex flex-col bg-white">
       {/* Header */}
       <div className="px-6 pt-12 pb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-[#e84672] flex items-center justify-center">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#e84672] flex items-center justify-center">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-[#e84672]">Talk Sweet</span>
           </div>
-          <span className="text-sm font-bold text-[#e84672]">Talk Sweet</span>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="text-xs font-semibold text-gray-400 hover:text-gray-600 transition"
+            >
+              Cancel
+            </button>
+          )}
         </div>
-        <h1 className="text-2xl font-extrabold text-gray-900 mt-4">Set up your style</h1>
+        <h1 className="text-2xl font-extrabold text-gray-900 mt-4">
+          {initialProfile ? "Update your style" : "Set up your style"}
+        </h1>
         <p className="text-sm text-gray-400 mt-1">
           Mostly tap-select onboarding to teach AI your dating voice.
         </p>
@@ -246,21 +329,18 @@ export default function ToneSetup({
           <div className="flex flex-col gap-5">
             <div>
               <p className="text-sm font-bold text-gray-900 mb-2">How old are you?</p>
-              <div className="flex flex-wrap gap-2">
-                {AGE_OPTIONS.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setAgeRange(option)}
-                    className={`px-3 py-2 rounded-full text-xs font-semibold border transition ${
-                      ageRange === option
-                        ? "border-[#e84672] bg-pink-50 text-[#e84672]"
-                        : "border-gray-200 text-gray-500"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={18}
+                max={100}
+                step={1}
+                placeholder="Type your exact age"
+                value={age}
+                onChange={(e) => setAge(e.target.value.replace(/[^\d]/g, ""))}
+                className={standardInputClass}
+              />
+              <p className="text-[11px] text-gray-400 mt-1">Enter a number between 18 and 100.</p>
             </div>
 
             <div>
@@ -268,28 +348,50 @@ export default function ToneSetup({
                 Where are you based right now, and where is home for you?
               </p>
               <div className="grid grid-cols-1 gap-2.5">
+                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Home country
+                </label>
                 <input
                   autoFocus
                   type="text"
-                  placeholder="Current city"
-                  value={currentCity}
-                  onChange={(e) => setCurrentCity(e.target.value)}
-                  className="w-full bg-gray-50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#e84672]/20 placeholder-gray-300"
-                />
-                <input
-                  type="text"
-                  placeholder="Current country"
-                  value={currentCountry}
-                  onChange={(e) => setCurrentCountry(e.target.value)}
-                  className="w-full bg-gray-50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#e84672]/20 placeholder-gray-300"
-                />
-                <input
-                  type="text"
-                  placeholder="Home country"
+                  list="country-suggestions"
+                  autoComplete="country-name"
+                  autoCapitalize="words"
+                  placeholder="e.g. United States"
                   value={homeCountry}
                   onChange={(e) => setHomeCountry(e.target.value)}
-                  className="w-full bg-gray-50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#e84672]/20 placeholder-gray-300"
+                  className={standardInputClass}
                 />
+                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Current country
+                </label>
+                <input
+                  type="text"
+                  list="country-suggestions"
+                  autoComplete="country-name"
+                  autoCapitalize="words"
+                  placeholder="e.g. United States"
+                  value={currentCountry}
+                  onChange={(e) => setCurrentCountry(e.target.value)}
+                  className={standardInputClass}
+                />
+                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Current city
+                </label>
+                <input
+                  type="text"
+                  autoComplete="address-level2"
+                  autoCapitalize="words"
+                  placeholder="e.g. Seattle"
+                  value={currentCity}
+                  onChange={(e) => setCurrentCity(e.target.value)}
+                  className={standardInputClass}
+                />
+                <datalist id="country-suggestions">
+                  {COUNTRY_SUGGESTIONS.map((country) => (
+                    <option key={country} value={country} />
+                  ))}
+                </datalist>
               </div>
             </div>
 

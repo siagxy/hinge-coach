@@ -20,6 +20,8 @@ export default function Home() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [view, setView] = useState<"list" | "chat" | "profile">("list");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetNotice, setResetNotice] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -64,10 +66,17 @@ export default function Home() {
   const handleProfileComplete = (p: UserProfile) => {
     setProfile(p);
     localStorage.setItem("user-profile", JSON.stringify(p));
+    setIsEditingProfile(false);
   };
 
   const requestResetProfile = () => {
+    setShowSettingsMenu(false);
     setShowResetConfirm(true);
+  };
+
+  const openProfileEditor = () => {
+    setShowSettingsMenu(false);
+    setIsEditingProfile(true);
   };
 
   const resetProfile = () => {
@@ -176,6 +185,16 @@ export default function Home() {
     return <ToneSetup onComplete={handleProfileComplete} />;
   }
 
+  if (isEditingProfile) {
+    return (
+      <ToneSetup
+        onComplete={handleProfileComplete}
+        initialProfile={profile}
+        onCancel={() => setIsEditingProfile(false)}
+      />
+    );
+  }
+
   // ─── Chat List View ───
   if (view === "list") {
     return (
@@ -187,9 +206,9 @@ export default function Home() {
             <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">{profile.name}</h1>
           </div>
           <button
-            onClick={requestResetProfile}
+            onClick={() => setShowSettingsMenu(true)}
             className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition"
-            title="Reset profile"
+            title="Open settings"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#666" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -253,7 +272,40 @@ export default function Home() {
         />
 
         {/* Bottom Nav */}
-        <BottomNav active="chat" />
+        <BottomNav active="chat" visibleTabs={["chat"]} />
+
+        {showSettingsMenu && (
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center">
+            <div className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-2xl px-5 pt-5 pb-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <p className="text-base font-bold text-gray-900">Settings</p>
+                <button
+                  onClick={() => setShowSettingsMenu(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition"
+                  aria-label="Close settings"
+                >
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  onClick={openProfileEditor}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                >
+                  Edit profile
+                </button>
+                <button
+                  onClick={requestResetProfile}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition"
+                >
+                  Reset profile
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showResetConfirm && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center">

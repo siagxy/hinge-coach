@@ -1,6 +1,11 @@
 "use client";
 
-export default function BottomNav({ active }: { active: string }) {
+type BottomNavProps = {
+  active: string;
+  visibleTabs?: string[];
+};
+
+export default function BottomNav({ active, visibleTabs }: BottomNavProps) {
   const tabs = [
     {
       id: "home",
@@ -40,9 +45,13 @@ export default function BottomNav({ active }: { active: string }) {
     },
   ];
 
+  const filteredTabs = visibleTabs?.length
+    ? tabs.filter((tab) => visibleTabs.includes(tab.id))
+    : tabs;
+
   return (
     <nav className="flex items-center justify-around py-2 border-t border-gray-100 bg-white">
-      {tabs.map((tab) => {
+      {filteredTabs.map((tab) => {
         const isActive = tab.id === active;
         return (
           <button
