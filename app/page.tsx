@@ -8,7 +8,8 @@ import StoryBar from "@/components/StoryBar";
 import BottomNav from "@/components/BottomNav";
 import ToneSetup from "@/components/ToneSetup";
 import PersonProfile from "@/components/PersonProfile";
-import { Message, Reply, Conversation, UserProfile, Flag } from "@/lib/types";
+import { hasSavedMatchContext } from "@/lib/conversationUtils";
+import { Message, Reply, Conversation, UserProfile, Flag, MatchContextImage } from "@/lib/types";
 
 export default function Home() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -24,6 +25,7 @@ export default function Home() {
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetNotice, setResetNotice] = useState<string | null>(null);
+  const [contextSaveNotice, setContextSaveNotice] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Load saved data on mount
@@ -60,6 +62,14 @@ export default function Home() {
     }, 3000);
     return () => window.clearTimeout(timer);
   }, [resetNotice]);
+
+  useEffect(() => {
+    if (!contextSaveNotice) return;
+    const timer = window.setTimeout(() => {
+      setContextSaveNotice(null);
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [contextSaveNotice]);
 
   const activeConvo = convos.find((c) => c.id === activeId) ?? null;
 
@@ -139,10 +149,30 @@ export default function Home() {
 
     try {
       const apiHistory = newHistory.map(({ role, content }) => ({ role, content }));
+      const hasMatchContext =
+        Boolean(activeConvo.matchProfileText?.trim()) ||
+        Boolean(activeConvo.priorChatText?.trim()) ||
+        (activeConvo.matchProfileImages?.length ?? 0) > 0 ||
+        (activeConvo.priorChatImages?.length ?? 0) > 0;
+      const matchContext = hasMatchContext
+        ? {
+            matchName: activeConvo.name,
+            matchProfileText: activeConvo.matchProfileText,
+            priorChatText: activeConvo.priorChatText,
+            matchProfileImages: activeConvo.matchProfileImages?.map(({ mediaType, data }) => ({
+              mediaType,
+              data,
+            })),
+            priorChatImages: activeConvo.priorChatImages?.map(({ mediaType, data }) => ({
+              mediaType,
+              data,
+            })),
+          }
+        : null;
       const res = await fetch("/api/reply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ history: apiHistory, profile }),
+        body: JSON.stringify({ history: apiHistory, profile, matchContext }),
       });
       const data = await res.json();
       setSuggestions(data.replies ?? []);
@@ -170,6 +200,30 @@ export default function Home() {
   const updateFlags = (id: string, flags: Flag[]) => {
     setConvos((prev) =>
       prev.map((c) => (c.id === id ? { ...c, flags } : c))
+    );
+  };
+
+  const updateMatchContext = (
+    id: string,
+    payload: {
+      matchProfileText: string;
+      priorChatText: string;
+      matchProfileImages: MatchContextImage[];
+      priorChatImages: MatchContextImage[];
+    }
+  ) => {
+    setConvos((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              matchProfileText: payload.matchProfileText,
+              priorChatText: payload.priorChatText,
+              matchProfileImages: payload.matchProfileImages,
+              priorChatImages: payload.priorChatImages,
+            }
+          : c
+      )
     );
   };
 
@@ -348,15 +402,24 @@ export default function Home() {
     const colorIndex = convos.findIndex((c) => c.id === activeId);
     return (
       <PersonProfile
+        key={activeConvo.id}
         conversation={activeConvo}
         colorIndex={colorIndex}
         onBack={() => setView("chat")}
         onUpdateFlags={(flags) => updateFlags(activeConvo.id, flags)}
+        onUpdateMatchContext={(payload) => {
+          updateMatchContext(activeConvo.id, payload);
+          setContextSaveNotice("Context saved for this chat.");
+        }}
       />
     );
   }
 
   // ─── Conversation View ───
+  const profileNotesCount = activeConvo
+    ? (activeConvo.flags?.length ?? 0) + (hasSavedMatchContext(activeConvo) ? 1 : 0)
+    : 0;
+
   return (
     <main className="max-w-md mx-auto w-full min-h-screen flex flex-col bg-white">
       {/* Chat Header */}
@@ -377,16 +440,25 @@ export default function Home() {
               {activeConvo?.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
             </span>
           </div>
-          {(activeConvo?.flags?.length ?? 0) > 0 && (
-            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
-              {activeConvo?.flags?.length}
+          {profileNotesCount > 0 && (
+            <span className="absolute -bottom-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
+              {profileNotesCount}
             </span>
           )}
         </button>
 
-        <button onClick={openProfile} className="flex-1 min-w-0 text-left">
+        <button onClick={openProfile} className="flex-1 min-w-0 text-left min-w-0">
           <p className="text-base font-bold text-gray-900 truncate">{activeConvo?.name}</p>
           <p className="text-[11px] text-green-500 font-medium">Online</p>
+        </button>
+
+        <button
+          type="button"
+          onClick={openProfile}
+          className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold text-[#e84672] bg-pink-50 hover:bg-pink-100 border border-pink-100 transition"
+          title="His profile, screenshots, or past chats"
+        >
+          Context
         </button>
 
         <button
@@ -430,6 +502,14 @@ export default function Home() {
       {/* Message Input */}
       {suggestions.length === 0 && (
         <MessageInput onSubmit={handleHisMessage} loading={loading} />
+      )}
+
+      {contextSaveNotice && (
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-20 z-50 px-4">
+          <div className="bg-gray-900 text-white text-xs font-medium px-3 py-2 rounded-full shadow-lg">
+            {contextSaveNotice}
+          </div>
+        </div>
       )}
     </main>
   );

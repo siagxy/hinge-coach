@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { buildMessagesWithMatchContext, type MatchContextPayload } from "@/lib/buildReplyMessages";
 import { buildSystemPrompt, SYSTEM_PROMPT } from "@/lib/prompts";
 import { UserProfile } from "@/lib/types";
 
@@ -6,17 +7,22 @@ const client = new Anthropic();
 
 export async function POST(req: Request) {
   try {
-    const { history, profile } = await req.json();
+    const { history, profile, matchContext } = await req.json();
 
     const systemPrompt = profile
       ? buildSystemPrompt(profile as UserProfile)
       : SYSTEM_PROMPT;
 
+    const messages = buildMessagesWithMatchContext(
+      history as { role: string; content: string }[],
+      matchContext as MatchContextPayload | null | undefined
+    );
+
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
       system: systemPrompt,
-      messages: history,
+      messages,
     });
 
     const content = response.content[0];

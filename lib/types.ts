@@ -18,11 +18,26 @@ export type Flag = {
   type: "green" | "red";
 };
 
+/** JPEG base64 (no data: prefix), for localStorage + API vision */
+export type MatchContextImage = {
+  id: string;
+  mediaType: "image/jpeg";
+  data: string;
+};
+
 export type Conversation = {
   id: string;
   name: string;
   history: Message[];
   flags?: Flag[];
+  /** Pasted text about his dating profile */
+  matchProfileText?: string;
+  /** Screenshots of his profile (compressed JPEG) */
+  matchProfileImages?: MatchContextImage[];
+  /** Pasted prior chat with him */
+  priorChatText?: string;
+  /** Screenshots of prior conversation */
+  priorChatImages?: MatchContextImage[];
 };
 
 export type UserProfile = {
