@@ -1,14 +1,7 @@
 "use client";
 import { flagsBadgeCount, hasSavedMatchContext } from "@/lib/conversationUtils";
 import { Conversation } from "@/lib/types";
-
-const PLACEHOLDER_COLORS = [
-  "bg-pink-200", "bg-purple-200", "bg-blue-200", "bg-amber-200", "bg-teal-200", "bg-rose-200"
-];
-
-function getInitials(name: string) {
-  return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-}
+import DateAvatar from "@/components/DateAvatar";
 
 function getTimeLabel(convo: Conversation): string {
   const len = convo.history.length;
@@ -76,9 +69,13 @@ export default function ChatList({
           >
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${PLACEHOLDER_COLORS[i % PLACEHOLDER_COLORS.length]}`}>
-                <span className="text-sm font-bold text-gray-700">{getInitials(c.name)}</span>
-              </div>
+              <DateAvatar
+                name={c.name}
+                avatarImage={c.avatarImage}
+                colorIndex={i}
+                className="w-12 h-12"
+                textClassName="text-sm"
+              />
               {hasContext && (
                 <span
                   className="absolute -top-0.5 -left-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"

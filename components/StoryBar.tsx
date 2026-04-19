@@ -1,13 +1,6 @@
 "use client";
 import { Conversation } from "@/lib/types";
-
-const PLACEHOLDER_COLORS = [
-  "bg-pink-200", "bg-purple-200", "bg-blue-200", "bg-amber-200", "bg-teal-200", "bg-rose-200"
-];
-
-function getInitials(name: string) {
-  return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-}
+import DateAvatar from "@/components/DateAvatar";
 
 export default function StoryBar({
   conversations,
@@ -33,10 +26,18 @@ export default function StoryBar({
         {/* Conversation avatars */}
         {conversations.slice(0, 6).map((c, i) => (
           <div key={c.id} className="flex flex-col items-center gap-1.5 flex-shrink-0">
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center ring-2 ring-[#e84672] ring-offset-2 ${PLACEHOLDER_COLORS[i % PLACEHOLDER_COLORS.length]}`}>
-              <span className="text-sm font-bold text-gray-700">{getInitials(c.name)}</span>
+            <div className="rounded-full ring-2 ring-[#e84672] ring-offset-2">
+              <DateAvatar
+                name={c.name}
+                avatarImage={c.avatarImage}
+                colorIndex={i}
+                className="w-14 h-14"
+                textClassName="text-sm"
+              />
             </div>
-            <span className="text-[10px] text-gray-600 font-medium w-14 text-center truncate">{c.name.split(" ")[0]}</span>
+            <span className="text-[10px] text-gray-600 font-medium max-w-[5rem] text-center truncate leading-tight px-0.5">
+              {c.name}
+            </span>
           </div>
         ))}
       </div>

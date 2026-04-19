@@ -29,6 +29,8 @@ export type Conversation = {
   id: string;
   name: string;
   history: Message[];
+  /** Optional photo for this match (story, list, chat header). */
+  avatarImage?: MatchContextImage;
   flags?: Flag[];
   /** Pasted text about his dating profile */
   matchProfileText?: string;
@@ -39,6 +41,9 @@ export type Conversation = {
   /** Screenshots of prior conversation */
   priorChatImages?: MatchContextImage[];
 };
+
+/** Default display name when none is set during onboarding (header + AI prompts). */
+export const DEFAULT_USER_DISPLAY_NAME = "Sia";
 
 export type UserProfile = {
   name: string;

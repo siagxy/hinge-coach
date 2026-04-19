@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Conversation, Flag } from "@/lib/types";
+import { Conversation, Flag, MatchContextImage } from "@/lib/types";
+import DateMatchPhotoRow from "@/components/DateMatchPhotoRow";
+import DateNameField from "@/components/DateNameField";
 
 const PRESET_GREEN = [
   "Good listener",
@@ -28,14 +30,6 @@ const PRESET_RED = [
   "Gives mixed signals",
 ];
 
-const PLACEHOLDER_COLORS = [
-  "bg-pink-200", "bg-purple-200", "bg-blue-200", "bg-amber-200", "bg-teal-200", "bg-rose-200",
-];
-
-function getInitials(name: string) {
-  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
-}
-
 function newId() {
   return crypto.randomUUID();
 }
@@ -45,11 +39,15 @@ export default function DateFlagsScreen({
   colorIndex,
   onBack,
   onUpdateFlags,
+  onUpdateAvatar,
+  onUpdateName,
 }: {
   conversation: Conversation;
   colorIndex: number;
   onBack: () => void;
   onUpdateFlags: (flags: Flag[]) => void;
+  onUpdateAvatar: (next: MatchContextImage | null) => void;
+  onUpdateName: (name: string) => void;
 }) {
   const [tab, setTab] = useState<"green" | "red">("green");
   const [customText, setCustomText] = useState("");
@@ -107,14 +105,19 @@ export default function DateFlagsScreen({
       </div>
 
       <div className="flex flex-col items-center pt-8 pb-4 px-6">
-        <div
-          className={`w-20 h-20 rounded-full flex items-center justify-center mb-3 ${
-            PLACEHOLDER_COLORS[colorIndex % PLACEHOLDER_COLORS.length]
-          }`}
-        >
-          <span className="text-xl font-extrabold text-gray-700">{getInitials(conversation.name)}</span>
+        <DateMatchPhotoRow
+          conversation={conversation}
+          colorIndex={colorIndex}
+          size="lg"
+          onChange={onUpdateAvatar}
+        />
+        <div className="mt-2 w-full px-2">
+          <DateNameField
+            name={conversation.name}
+            onUpdateName={onUpdateName}
+            className="text-xl font-extrabold text-gray-900"
+          />
         </div>
-        <h2 className="text-xl font-extrabold text-gray-900">{conversation.name}</h2>
         <p className="text-xs text-gray-400 mt-1">{messageCount} messages exchanged</p>
 
         <div className="flex gap-4 mt-4">

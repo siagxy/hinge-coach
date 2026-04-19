@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { UserProfile } from "@/lib/types";
+import { UserProfile, DEFAULT_USER_DISPLAY_NAME } from "@/lib/types";
 
 const CATEGORY_TITLES = [
   "You At A Glance",
@@ -240,7 +240,7 @@ export default function ToneSetup({
     ].join(". ");
 
     onComplete({
-      name: initialProfile?.name || "You",
+      name: initialProfile?.name || DEFAULT_USER_DISPLAY_NAME,
       age: normalizedAge,
       location,
       interests: interests.join(", "),

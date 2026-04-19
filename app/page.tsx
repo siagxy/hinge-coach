@@ -8,9 +8,18 @@ import StoryBar from "@/components/StoryBar";
 import BottomNav from "@/components/BottomNav";
 import ToneSetup from "@/components/ToneSetup";
 import DateFlagsScreen from "@/components/DateFlagsScreen";
+import DateAvatar from "@/components/DateAvatar";
 import MatchContextScreen from "@/components/MatchContextScreen";
 import { hasSavedMatchContext } from "@/lib/conversationUtils";
-import { Message, Reply, Conversation, UserProfile, Flag, MatchContextImage } from "@/lib/types";
+import {
+  Message,
+  Reply,
+  Conversation,
+  UserProfile,
+  Flag,
+  MatchContextImage,
+  DEFAULT_USER_DISPLAY_NAME,
+} from "@/lib/types";
 
 export default function Home() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -33,7 +42,15 @@ export default function Home() {
   useEffect(() => {
     const savedProfile = localStorage.getItem("user-profile");
     if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
+      const parsed = JSON.parse(savedProfile) as UserProfile;
+      // Older builds used "You" as the placeholder name; migrate to the current default.
+      if (parsed.name === "You") {
+        const updated = { ...parsed, name: DEFAULT_USER_DISPLAY_NAME };
+        localStorage.setItem("user-profile", JSON.stringify(updated));
+        setProfile(updated);
+      } else {
+        setProfile(parsed);
+      }
     }
     setProfileLoaded(true);
 
@@ -228,6 +245,28 @@ export default function Home() {
     );
   };
 
+  const updateConversationAvatar = (id: string, next: MatchContextImage | null) => {
+    setConvos((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        if (!next) {
+          const cleared = { ...c };
+          delete cleared.avatarImage;
+          return cleared;
+        }
+        return { ...c, avatarImage: next };
+      })
+    );
+  };
+
+  const updateConversationName = (id: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setConvos((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, name: trimmed } : c))
+    );
+  };
+
   const openMatchContext = () => {
     if (activeConvo) setView("matchContext");
   };
@@ -411,6 +450,8 @@ export default function Home() {
         conversation={activeConvo}
         colorIndex={colorIndex}
         onBack={() => setView("chat")}
+        onUpdateAvatar={(next) => updateConversationAvatar(activeConvo.id, next)}
+        onUpdateName={(name) => updateConversationName(activeConvo.id, name)}
         onUpdateMatchContext={(payload) => {
           updateMatchContext(activeConvo.id, payload);
           setContextSaveNotice("About him saved for this chat.");
@@ -427,6 +468,8 @@ export default function Home() {
         conversation={activeConvo}
         colorIndex={colorIndex}
         onBack={() => setView("chat")}
+        onUpdateAvatar={(next) => updateConversationAvatar(activeConvo.id, next)}
+        onUpdateName={(name) => updateConversationName(activeConvo.id, name)}
         onUpdateFlags={(flags) => updateFlags(activeConvo.id, flags)}
       />
     );
@@ -435,6 +478,8 @@ export default function Home() {
   // ─── Conversation View ───
   const flagCount = activeConvo ? (activeConvo.flags?.length ?? 0) : 0;
   const hasContextSaved = activeConvo ? hasSavedMatchContext(activeConvo) : false;
+  const headerColorIndex =
+    activeConvo && activeId ? Math.max(0, convos.findIndex((c) => c.id === activeId)) : 0;
 
   return (
     <main className="max-w-md mx-auto w-full min-h-screen flex flex-col bg-white">
@@ -451,11 +496,15 @@ export default function Home() {
 
         {/* Avatar — tap for pros & cons */}
         <button type="button" onClick={openDateFlags} className="relative shrink-0">
-          <div className="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center">
-            <span className="text-xs font-bold text-gray-700">
-              {activeConvo?.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-            </span>
-          </div>
+          {activeConvo && (
+            <DateAvatar
+              name={activeConvo.name}
+              avatarImage={activeConvo.avatarImage}
+              colorIndex={headerColorIndex}
+              className="w-10 h-10"
+              textClassName="text-xs"
+            />
+          )}
           {flagCount > 0 && (
             <span className="absolute -bottom-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
               {flagCount}
