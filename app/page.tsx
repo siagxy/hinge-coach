@@ -483,74 +483,79 @@ export default function Home() {
 
   return (
     <main className="max-w-md mx-auto w-full min-h-screen flex flex-col bg-white">
-      {/* Chat Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
-        <button
-          onClick={goBack}
-          className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition"
-        >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#333" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+      {/* Chat header: two rows so the name is not squeezed next to pills on narrow phones */}
+      <div className="px-4 pt-4 pb-3 border-b border-gray-100 flex flex-col gap-2.5">
+        <div className="flex items-start gap-3">
+          <button
+            onClick={goBack}
+            className="w-9 h-9 shrink-0 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition"
+          >
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#333" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
 
-        {/* Avatar — tap for pros & cons */}
-        <button type="button" onClick={openDateFlags} className="relative shrink-0">
-          {activeConvo && (
-            <DateAvatar
-              name={activeConvo.name}
-              avatarImage={activeConvo.avatarImage}
-              colorIndex={headerColorIndex}
-              className="w-10 h-10"
-              textClassName="text-xs"
-            />
-          )}
-          {flagCount > 0 && (
-            <span className="absolute -bottom-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
-              {flagCount}
-            </span>
-          )}
-        </button>
+          <button type="button" onClick={openDateFlags} className="relative shrink-0">
+            {activeConvo && (
+              <DateAvatar
+                name={activeConvo.name}
+                avatarImage={activeConvo.avatarImage}
+                colorIndex={headerColorIndex}
+                className="w-10 h-10"
+                textClassName="text-xs"
+              />
+            )}
+            {flagCount > 0 && (
+              <span className="absolute -bottom-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
+                {flagCount}
+              </span>
+            )}
+          </button>
 
-        <button type="button" onClick={openDateFlags} className="flex-1 min-w-0 text-left min-w-0">
-          <p className="text-base font-bold text-gray-900 truncate">{activeConvo?.name}</p>
-          <p className="text-[11px] text-green-500 font-medium">Online</p>
-        </button>
+          <button type="button" onClick={openDateFlags} className="flex-1 min-w-0 text-left pt-0.5">
+            <p className="text-base font-bold text-gray-900 break-words leading-snug line-clamp-3">
+              {activeConvo?.name}
+            </p>
+            <p className="text-[11px] text-green-500 font-medium">Online</p>
+          </button>
 
-        <button
-          type="button"
-          onClick={openMatchContext}
-          className="relative shrink-0 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-[#e84672] bg-pink-50 hover:bg-pink-100 border border-pink-100 transition"
-          title="His profile, screenshots, and prior chats — used to personalize replies"
-        >
-          About him
-          {hasContextSaved && (
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
-          )}
-        </button>
+          <button
+            onClick={() => activeConvo && deleteConvo(activeConvo.id)}
+            className="w-9 h-9 shrink-0 rounded-full bg-gray-50 flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition text-gray-400"
+          >
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
 
-        <button
-          type="button"
-          onClick={openDateFlags}
-          className="relative shrink-0 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 transition"
-          title="What stands out — good signs and things to watch"
-        >
-          Pros & cons
-          {flagCount > 0 && (
-            <span className="absolute -bottom-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
-              {flagCount}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={openMatchContext}
+            className="relative shrink-0 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-[#e84672] bg-pink-50 hover:bg-pink-100 border border-pink-100 transition"
+            title="His profile, screenshots, and prior chats — used to personalize replies"
+          >
+            About him
+            {hasContextSaved && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+            )}
+          </button>
 
-        <button
-          onClick={() => activeConvo && deleteConvo(activeConvo.id)}
-          className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition text-gray-400"
-        >
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
+          <button
+            type="button"
+            onClick={openDateFlags}
+            className="relative shrink-0 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 transition"
+            title="What stands out — good signs and things to watch"
+          >
+            Pros & cons
+            {flagCount > 0 && (
+              <span className="absolute -bottom-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#e84672] text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
+                {flagCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
