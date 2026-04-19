@@ -91,10 +91,13 @@ export default function ToneSetup({
   onComplete,
   initialProfile,
   onCancel,
+  onSkip,
 }: {
   onComplete: (profile: UserProfile) => void;
   initialProfile?: UserProfile | null;
   onCancel?: () => void;
+  /** First-time onboarding only: jump in with default style (warm / medium). */
+  onSkip?: () => void;
 }) {
   const parseList = (value?: string) =>
     value
@@ -297,9 +300,20 @@ export default function ToneSetup({
             </button>
           )}
         </div>
-        <h1 className="text-2xl font-extrabold text-gray-900 mt-4">
-          {initialProfile ? "Update your style" : "Set up your style"}
-        </h1>
+        <div className="flex items-start justify-between gap-3 mt-4">
+          <h1 className="text-2xl font-extrabold text-gray-900 flex-1 min-w-0">
+            {initialProfile ? "Update your style" : "Set up your style"}
+          </h1>
+          {!initialProfile && onSkip && (
+            <button
+              type="button"
+              onClick={onSkip}
+              className="shrink-0 text-sm font-semibold text-gray-400 hover:text-[#e84672] transition py-1"
+            >
+              Skip for now
+            </button>
+          )}
+        </div>
         <p className="text-sm text-gray-400 mt-1">
           Mostly tap-select onboarding to teach AI your dating voice.
         </p>

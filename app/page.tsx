@@ -20,6 +20,7 @@ import {
   MatchContextImage,
   DEFAULT_USER_DISPLAY_NAME,
 } from "@/lib/types";
+import { createSkippedStyleProfile } from "@/lib/defaultUserProfile";
 
 export default function Home() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -280,7 +281,12 @@ export default function Home() {
 
   // ─── Onboarding ───
   if (!profile) {
-    return <ToneSetup onComplete={handleProfileComplete} />;
+    return (
+      <ToneSetup
+        onComplete={handleProfileComplete}
+        onSkip={() => handleProfileComplete(createSkippedStyleProfile())}
+      />
+    );
   }
 
   if (isEditingProfile) {
